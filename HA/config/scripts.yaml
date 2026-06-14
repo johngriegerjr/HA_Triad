@@ -1,0 +1,66 @@
+amp_volume_up:
+  alias: "Amp Volume Up"
+  icon: mdi:volume-plus
+  sequence:
+    - action: shell_command.amp_volume_up
+    - delay: "00:00:00.500"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+amp_volume_down:
+  alias: "Amp Volume Down"
+  icon: mdi:volume-minus
+  sequence:
+    - action: shell_command.amp_volume_down
+    - delay: "00:00:00.500"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+amp_tv_preset:
+  alias: "TV Preset"
+  icon: mdi:television
+  sequence:
+    - action: shell_command.amp_tv_preset
+    - delay: "00:00:01"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+amp_squeezelite_preset:
+  alias: "Squeezelite Preset"
+  icon: mdi:music-note
+  sequence:
+    - action: shell_command.amp_squeezelite_preset
+    - delay: "00:00:01"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+set_volume_bash:
+  alias: "Set piCorePlayer Volume (Bash)"
+  icon: mdi:volume-high
+  sequence:
+    - service: shell_command.set_picoreplayer_volume_bash
+      response_variable: cmd_result
+    - service: notify.persistent_notification
+      data:
+        title: "piCorePlayer Volume"
+        message: "Volume set to 60% via Bash script."
+
+set_amplifier_eq:
+  alias: "Set Amp EQ"
+  icon: mdi:equalizer
+  fields:
+    profile_name:
+      description: "The filename of the script minus .sh extension"
+      example: "classical"
+  sequence:
+    - action: shell_command.set_eq_profile
+      data:
+        profile: "{{ profile_name }}"
+    - delay: "00:00:01"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_eq_profile

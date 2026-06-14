@@ -1,0 +1,266 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+shell_command:
+  amp_on: "ssh -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5 'amixer -c 1 set PowerAmp on'"
+  amp_off: "ssh -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5 'amixer -c 1 set PowerAmp off'"
+  get_eq_values: "ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5 '/bin/sh /mnt/persistent/music_profiles/get_eq_state.sh'"
+  set_eq_profile: "ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5 '/bin/sh /mnt/persistent/music_profiles/{{ profile }}.sh'"
+  set_picoreplayer_volume_bash: /bin/bash /config/scripts/set_volume.sh
+  # New — passes the live slider value to the script:
+  set_pcp_volume: >-
+    /bin/bash /config/scripts/set_volume_dynamic.sh
+    {{ states('input_number.pcp_volume') | int }}
+  set_eq_sliders_dynamic: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@192.168.1.5
+    'amixer -c 1 set Filter31_5 {{ states("input_number.eq_filter_31_5") | int }}% &&
+     amixer -c 1 set Filter63 {{ states("input_number.eq_filter_63") | int }}% &&
+     amixer -c 1 set Filter125 {{ states("input_number.eq_filter_125") | int }}% &&
+     amixer -c 1 set Filter250 {{ states("input_number.eq_filter_250") | int }}% &&
+     amixer -c 1 set Filter500 {{ states("input_number.eq_filter_500") | int }}% &&
+     amixer -c 1 set Filter1000 {{ states("input_number.eq_filter_1000") | int }}% &&
+     amixer -c 1 set Filter2000 {{ states("input_number.eq_filter_2000") | int }}% &&
+     amixer -c 1 set Filter4000 {{ states("input_number.eq_filter_4000") | int }}% &&
+     amixer -c 1 set Filter8000 {{ states("input_number.eq_filter_8000") | int }}% &&
+     amixer -c 1 set Filter16000 {{ states("input_number.eq_filter_16000") | int }}%'
+
+  amp_volume_up: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set Master 2+'
+
+  amp_volume_down: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set Master 2-'
+
+  amp_mute_on: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set Master off'
+
+  amp_mute_off: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set Master on'
+
+  set_amp_master_volume: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set Master {{ states("input_number.amp_master_volume") | int }}'
+
+  set_amp_bass: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set Bass {{ states("input_number.amp_bass") | int }}'
+
+  set_amp_treble: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set Treble {{ states("input_number.amp_treble") | int }}'
+
+  set_amp_balance: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set Balance {{ states("input_number.amp_balance") | int }}'
+
+  set_amp_output_mode: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set OutputMode {{ states("input_select.amp_output_mode") }}'
+
+  set_amp_output_routing: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set LocalAmp {{ states("input_select.amp_output_routing") }}'
+
+  set_amp_digital_mux: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set DigitalMux {{ states("input_select.amp_digital_mux") }}'
+
+  amp_tv_preset: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set DigitalMux Optical && amixer -c 1 set LocalAmp Digital && amixer -c 1 set Master 25%'
+
+  amp_squeezelite_preset: >-
+    ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+    -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+    'amixer -c 1 set LocalAmp Normal'
+
+command_line:
+  - sensor:
+      name: "Power Amp State"
+      unique_id: power_amp_state
+      command: "ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5 'amixer -c 1 get PowerAmp'"
+      scan_interval: 60
+      value_template: >
+        {% if '[on]' in value | lower %}
+          on
+        {% elif '[off]' in value | lower %}
+          off
+        {% else %}
+          unknown
+        {% endif %}
+
+  - sensor:
+      name: "Amp EQ Profile"
+      unique_id: amp_eq_profile
+      command: "ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@192.168.1.5 '/bin/sh /mnt/persistent/music_profiles/get_eq_state.sh'"
+      scan_interval: 60  # <-- Pulls live data every 60 seconds
+      # Tells HA to parse the incoming string as JSON data
+      value_template: >
+        {% set b = value_json %}
+        {% if b.b31_5==50 and b.b63==50 and b.b125==50 and b.b250==50 and b.b500==50 and b.b1k==50 and b.b2k==50 and b.b4k==50 and b.b8k==50 and b.b16k==50 %}
+          Flat
+        {% elif b.b31_5==73 and b.b63==69 and b.b125==58 and b.b250==50 and b.b500==44 and b.b1k==48 and b.b2k==54 and b.b4k==65 and b.b8k==73 and b.b16k==75 %}
+          Rock/Metal
+        {% elif b.b31_5==79 and b.b63==75 and b.b125==73 and b.b250==58 and b.b500==50 and b.b1k==50 and b.b2k==54 and b.b4k==58 and b.b8k==65 and b.b16k==69 %}
+          Bass Boost
+        {% elif b.b31_5==79 and b.b63==75 and b.b125==69 and b.b250==54 and b.b500==50 and b.b1k==50 and b.b2k==50 and b.b4k==54 and b.b8k==65 and b.b16k==73 %}
+          Late-Night
+        {% elif b.b31_5==50 and b.b63==50 and b.b125==50 and b.b250==58 and b.b500==58 and b.b1k==65 and b.b2k==54 and b.b4k==50 and b.b8k==58 and b.b16k==65 %}
+          Classical/Jazz
+        {% elif b.b31_5==69 and b.b63==73 and b.b125==58 and b.b250==50 and b.b500==48 and b.b1k==54 and b.b2k==65 and b.b4k==69 and b.b8k==73 and b.b16k==69 %}
+          Modern Pop
+        {% elif b.b31_5==40 and b.b63==48 and b.b125==54 and b.b250==65 and b.b500==69 and b.b1k==69 and b.b2k==65 and b.b4k==58 and b.b8k==54 and b.b16k==50 %}
+          Vocal/Podcast
+        {% else %}
+          Manual
+        {% endif %}
+      # This saves the exact hardware states directly inside the sensor object
+      json_attributes:
+        - b31_5
+        - b63
+        - b125
+        - b250
+        - b500
+        - b1k
+        - b2k
+        - b4k
+        - b8k
+        - b16k
+
+  - sensor:
+      name: "Amp State"
+      unique_id: amp_state
+      command: >-
+        ssh -q -i /config/.ssh/id_rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+        -o StrictHostKeyChecking=no -o BatchMode=yes root@192.168.1.5
+        '/bin/sh /mnt/persistent/get_amp_state.sh'
+      scan_interval: 30
+      value_template: "{{ value_json.output_mode }}"
+      json_attributes:
+        - master
+        - mute
+        - bass
+        - treble
+        - balance
+        - output_mode
+        - local_amp
+        - digital_mux
+
+template:
+  - switch:
+      - name: "Power Amp"
+        unique_id: power_amp
+        icon: >
+          {% if states('sensor.power_amp_state') == 'on' %}
+            mdi:amplifier
+          {% else %}
+            mdi:amplifier-off
+          {% endif %}
+        state: "{{ states('sensor.power_amp_state') == 'on' }}"
+        turn_on:
+          - action: shell_command.amp_on
+          - action: homeassistant.update_entity
+            data:
+              entity_id: sensor.power_amp_state
+        turn_off:
+          - action: shell_command.amp_off
+          - action: homeassistant.update_entity
+            data:
+              entity_id: sensor.power_amp_state
+
+      - name: "Amp Mute"
+        unique_id: amp_mute
+        icon: mdi:volume-mute
+        # state TRUE = muted  (playback switch is 'off')
+        # state FALSE = playing (playback switch is 'on')
+        state: "{{ state_attr('sensor.amp_state', 'mute') == 'off' }}"
+        turn_on:
+          - action: shell_command.amp_mute_on
+          - delay: "00:00:01"
+          - action: homeassistant.update_entity
+            data:
+              entity_id: sensor.amp_state
+        turn_off:
+          - action: shell_command.amp_mute_off
+          - delay: "00:00:01"
+          - action: homeassistant.update_entity
+            data:
+              entity_id: sensor.amp_state
+
+input_number:
+  amp_master_volume:
+    name: "Master Volume"
+    min: 0
+    max: 100
+    step: 1
+    icon: mdi:volume-high
+
+  amp_bass:
+    name: "Bass"
+    min: 0
+    max: 48
+    step: 1
+    icon: mdi:music-note
+
+  amp_treble:
+    name: "Treble"
+    min: 0
+    max: 48
+    step: 1
+    icon: mdi:music-note-plus
+
+  amp_balance:
+    name: "Balance"
+    min: 0
+    max: 48
+    step: 1
+    icon: mdi:scale-balance
+    # 0 = Full Left  |  24 = Center  |  48 = Full Right
+
+input_select:
+  amp_output_mode:
+    name: "Output Mode"
+    options:
+      - Tone
+      - Bypass
+      - EQ
+    icon: mdi:tune
+
+  amp_output_routing:
+    name: "Output Routing"
+    options:
+      - Normal
+      - Analog
+      - Digital
+    icon: mdi:audio-input-rca
+    # Maps to the 'LocalAmp' amixer control
+
+  amp_digital_mux:
+    name: "Digital Mux"
+    options:
+      - Optical
+      - SPDIF
+    icon: mdi:toslink

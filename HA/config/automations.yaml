@@ -1,0 +1,253 @@
+- alias: "Amp - Sync Sensor to Input Helpers"
+  id: amp_sync_sensor_to_inputs
+  description: "Push polled hardware values into input_number / input_select helpers"
+  trigger:
+    - platform: state
+      entity_id: sensor.amp_state
+  action:
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.amp_master_volume
+      data:
+        value: "{{ state_attr('sensor.amp_state', 'master') | int(0) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.amp_bass
+      data:
+        value: "{{ state_attr('sensor.amp_state', 'bass') | int(24) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.amp_treble
+      data:
+        value: "{{ state_attr('sensor.amp_state', 'treble') | int(24) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.amp_balance
+      data:
+        value: "{{ state_attr('sensor.amp_state', 'balance') | int(24) }}"
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.amp_output_mode
+      data:
+        option: "{{ state_attr('sensor.amp_state', 'output_mode') }}"
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.amp_output_routing
+      data:
+        option: "{{ state_attr('sensor.amp_state', 'local_amp') }}"
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.amp_digital_mux
+      data:
+        option: "{{ state_attr('sensor.amp_state', 'digital_mux') }}"
+
+- alias: "Amp - Set Master Volume"
+  id: amp_set_master_volume
+  trigger:
+    - platform: state
+      entity_id: input_number.amp_master_volume
+  condition:
+    - condition: template
+      value_template: >
+        {{ (trigger.to_state.state | int(0))
+           != (state_attr('sensor.amp_state', 'master') | int(-1)) }}
+  action:
+    - action: shell_command.set_amp_master_volume
+    - delay: "00:00:01"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+- alias: "Amp - Set Bass"
+  id: amp_set_bass
+  trigger:
+    - platform: state
+      entity_id: input_number.amp_bass
+  condition:
+    - condition: template
+      value_template: >
+        {{ (trigger.to_state.state | int(0))
+           != (state_attr('sensor.amp_state', 'bass') | int(-1)) }}
+  action:
+    - action: shell_command.set_amp_bass
+    - delay: "00:00:01"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+- alias: "Amp - Set Treble"
+  id: amp_set_treble
+  trigger:
+    - platform: state
+      entity_id: input_number.amp_treble
+  condition:
+    - condition: template
+      value_template: >
+        {{ (trigger.to_state.state | int(0))
+           != (state_attr('sensor.amp_state', 'treble') | int(-1)) }}
+  action:
+    - action: shell_command.set_amp_treble
+    - delay: "00:00:01"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+- alias: "Amp - Set Balance"
+  id: amp_set_balance
+  trigger:
+    - platform: state
+      entity_id: input_number.amp_balance
+  condition:
+    - condition: template
+      value_template: >
+        {{ (trigger.to_state.state | int(0))
+           != (state_attr('sensor.amp_state', 'balance') | int(-1)) }}
+  action:
+    - action: shell_command.set_amp_balance
+    - delay: "00:00:01"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+- alias: "Amp - Set Output Mode"
+  id: amp_set_output_mode
+  trigger:
+    - platform: state
+      entity_id: input_select.amp_output_mode
+  condition:
+    - condition: template
+      value_template: >
+        {{ trigger.to_state.state
+           != state_attr('sensor.amp_state', 'output_mode') }}
+  action:
+    - action: shell_command.set_amp_output_mode
+    - delay: "00:00:01"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+- alias: "Amp - Set Output Routing"
+  id: amp_set_output_routing
+  trigger:
+    - platform: state
+      entity_id: input_select.amp_output_routing
+  condition:
+    - condition: template
+      value_template: >
+        {{ trigger.to_state.state
+           != state_attr('sensor.amp_state', 'local_amp') }}
+  action:
+    - action: shell_command.set_amp_output_routing
+    - delay: "00:00:01"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+- alias: "Amp - Set Digital Mux"
+  id: amp_set_digital_mux
+  trigger:
+    - platform: state
+      entity_id: input_select.amp_digital_mux
+  condition:
+    - condition: template
+      value_template: >
+        {{ trigger.to_state.state
+           != state_attr('sensor.amp_state', 'digital_mux') }}
+  action:
+    - action: shell_command.set_amp_digital_mux
+    - delay: "00:00:01"
+    - action: homeassistant.update_entity
+      data:
+        entity_id: sensor.amp_state
+
+- id: eq_sliders_changed
+  alias: "EQ: Sliders Moved"
+  trigger:
+    - platform: state
+      entity_id:
+        - input_number.eq_filter_31_5
+        - input_number.eq_filter_63
+        - input_number.eq_filter_125
+        - input_number.eq_filter_250
+        - input_number.eq_filter_500
+        - input_number.eq_filter_1000
+        - input_number.eq_filter_2000
+        - input_number.eq_filter_4000
+        - input_number.eq_filter_8000
+        - input_number.eq_filter_16000
+  action:
+    - action: shell_command.set_eq_sliders_dynamic
+
+- id: eq_preset_syncs_sliders
+  alias: "EQ: Profile Syncs Sliders"
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: sensor.amp_eq_profile
+  condition:
+    # Trigger whenever the data updates, even if it stays on "Manual"
+    - condition: template
+      value_template: "{{ trigger.to_state.state != 'unknown' and has_value('sensor.amp_eq_profile') }}"
+  action:
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.eq_filter_31_5
+      data:
+        value: "{{ state_attr('sensor.amp_eq_profile', 'b31_5') | int(50) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.eq_filter_63
+      data:
+        value: "{{ state_attr('sensor.amp_eq_profile', 'b63') | int(50) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.eq_filter_125
+      data:
+        value: "{{ state_attr('sensor.amp_eq_profile', 'b125') | int(50) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.eq_filter_250
+      data:
+        value: "{{ state_attr('sensor.amp_eq_profile', 'b250') | int(50) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.eq_filter_500
+      data:
+        value: "{{ state_attr('sensor.amp_eq_profile', 'b500') | int(50) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.eq_filter_1000
+      data:
+        value: "{{ state_attr('sensor.amp_eq_profile', 'b1k') | int(50) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.eq_filter_2000
+      data:
+        value: "{{ state_attr('sensor.amp_eq_profile', 'b2k') | int(50) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.eq_filter_4000
+      data:
+        value: "{{ state_attr('sensor.amp_eq_profile', 'b4k') | int(50) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.eq_filter_8000
+      data:
+        value: "{{ state_attr('sensor.amp_eq_profile', 'b8k') | int(50) }}"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.eq_filter_16000
+      data:
+        value: "{{ state_attr('sensor.amp_eq_profile', 'b16k') | int(50) }}"
+
+- id: set_pcp_volume_slider
+  alias: "Set PCP Volume from Slider"
+  trigger:
+    - platform: state
+      entity_id: input_number.pcp_volume
+  condition: []
+  action:
+    - service: shell_command.set_pcp_volume
+  mode: queued
+  max: 5
+
