@@ -1,0 +1,51 @@
+# lrwxrwxrwx    1 root     root          21 May 26 22:05 98alsamixer -> /etc/init.d/alsamixer
+
+amixer -c 1 set Master 100%
+amixer -c 1 set LocalAmp Analog
+#amixer -c 1 set LocalAmp Normal
+amixer -c 1 set OutputParams 96k_24
+amixer -c 1 set OutputMode EQ
+
+# Reset to Flat (50%)
+
+amixer -c 1 set Filter31_5 50%
+amixer -c 1 set Filter63 50%
+amixer -c 1 set Filter125 50%
+amixer -c 1 set Filter250 50%
+amixer -c 1 set Filter500 50%
+amixer -c 1 set Filter1000 50%
+amixer -c 1 set Filter2000 50%
+amixer -c 1 set Filter4000 50%
+amixer -c 1 set Filter8000 50%
+amixer -c 1 set Filter16000 50%
+
+# Rock / Metal Profile
+
+amixer -c 1 set Filter31_5 71%
+amixer -c 1 set Filter63 67%
+amixer -c 1 set Filter125 58%
+amixer -c 1 set Filter250 50%
+amixer -c 1 set Filter500 42%
+amixer -c 1 set Filter1000 46%
+amixer -c 1 set Filter2000 54%
+amixer -c 1 set Filter4000 63%
+amixer -c 1 set Filter8000 71%
+amixer -c 1 set Filter16000 75%
+amixer -c 1 set PowerAmp off
+
+sleep 5
+amixer -c 1 set FirmwareRate '96k'
+
+sleep 5
+
+amixer -c 1 set PowerAmp on
+
+# Start Squeezelite
+/mnt/persistent/squeezelite \
+    -o hw:1,0 \
+    -n "Triad1" \
+    -s 192.168.1.44 \
+    -a 24:2::0 \
+    -z
+
+exit 0
